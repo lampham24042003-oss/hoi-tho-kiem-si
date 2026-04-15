@@ -1031,6 +1031,7 @@ class GameEngine {
 
       attacker.processUltimateCombo(target, () => {
           this.state = 'playing';
+          target.isFlinching = false; // FINALLY RESET FLINCH SO TARGET CAN MOVE AGAIN!
           if (target.isDead) {
               setTimeout(() => this._endRound(), 500);
           }
@@ -1038,7 +1039,7 @@ class GameEngine {
       // CRITICAL FIX: Effects must continue to update so impacts decay and particles move!
       Effects.update();
       // Also update target's hit stun flashing if needed
-      target.isFlinching = true; 
+      target.isFlinching = true;  
       return;
     }
 
