@@ -17,7 +17,7 @@ class AIController {
     switch (this.difficulty) {
       case 'easy':   return 60 + Math.random() * 40;  
       case 'medium': return 30 + Math.random() * 20;  
-      case 'hard':   return 8 + Math.random() * 8;    
+      case 'hard':   return 10 + Math.random() * 10;    
     }
   }
 
@@ -26,7 +26,7 @@ class AIController {
   }
 
   update(keys) {
-    if (!this.fighter || !this.opponent) return;
+    if (!this.fighter || !this.opponent) return keys;
 
     if (this.dodgeCooldown > 0) this.dodgeCooldown--;
     if (this.blockCooldown > 0) this.blockCooldown--;
@@ -51,24 +51,22 @@ class AIController {
     // Safety check just in case charData is missing
     const charId = this.fighter.charData ? this.fighter.charData.id : 'unknown';
 
-    // --- BỘ NÃO PHÒNG THỦ DÙNG CHUNG (Cho Medium/Hard) ---
-    if (this.difficulty === 'hard' || (this.difficulty === 'medium' && this._chance(40))) {
+    // --- DEFENSIVE OVERRIDES (Interrupts actions instantly) ---
+    if ((this.difficulty === 'hard' || this.difficulty === 'medium') && this.actionTimer % 3 === 0) {
       const opponentAttacking = this.opponent.isAttacking || this.opponent.isKicking;
       
-      // Reactive Perfect Counter Block (Hard xài liên tục nếu đối thủ vung kiếm)
+      // Reactive Perfect Counter Block 
       if (opponentAttacking && absDx < 160 && isOpponentAhead && this.blockCooldown === 0) {
         if (this.difficulty === 'hard' && this._chance(85)) {
-          aiKeys.block = true;
-          this.blockCooldown = 25; // Cooldown tíc tắc => Spam Block liên tục
-          return aiKeys;
+          this.currentAction = 'block';
+          this.blockCooldown = 25; 
         } else if (this.difficulty === 'medium' && this._chance(40)) {
-           aiKeys.block = true;
-           this.blockCooldown = 45;
-           return aiKeys;
+          this.currentAction = 'block';
+          this.blockCooldown = 45;
         }
       }
 
-      // Né Projectile (Dash/Dodge)
+      // Dodge Projectile
       if (this.opponent.projectiles && this.opponent.projectiles.length > 0) {
         const threat = this.opponent.projectiles.find(p =>
           Math.abs(p.y - this.fighter.y) < 80 &&
@@ -76,24 +74,27 @@ class AIController {
         );
         if (threat && this.dodgeCooldown === 0) {
           if (this.difficulty === 'hard' && this._chance(80)) {
-            aiKeys.dodge = true;
+            aiKeys.dodge = true; // Dodge is an instant tap
             this.dodgeCooldown = 50;
-            return aiKeys;
+            this.currentAction = 'idle'; // Reset action
           } else if (this._chance(30)) {
             aiKeys.dodge = true;
             this.dodgeCooldown = 80;
-            return aiKeys;
+            this.currentAction = 'idle';
           }
         }
       }
     }
 
-    // --- BỘ NHỊP QUYẾT ĐỊNH HÀNH ĐỘNG ---
+    // --- HEARTBEAT & ACTION SELECTION ---
     if (this.actionTimer >= this.actionInterval) {
       this.actionTimer = 0;
       this.actionInterval = this._getBaseInterval();
+      
+      // Reset action for fresh evaluation
+      this.currentAction = 'idle';
 
-      // Based on character logic
+      // Character-specific brain overrides this.currentAction
       if (charId === 'tanjiro') {
         this._playTanjiro(aiKeys, dx, absDx, isOpponentAhead);
       } else if (charId === 'zenitsu') {
@@ -101,22 +102,28 @@ class AIController {
       } else {
         this._playGeneric(aiKeys, dx, absDx, isOpponentAhead);
       }
-      
-      // Chạy hành động lẻ được gán
-      if (this.currentAction === 'jump' && this.jumpCooldown === 0) {
-        aiKeys.jump = true;
-        this.jumpCooldown = this.difficulty === 'hard' ? 40 : 80;
-        this.currentAction = null;
-      }
-      
-      // Di chuyển
-      if (this.currentAction === 'approach') {
-        aiKeys.moveRight = dx > 0;
-        aiKeys.moveLeft = dx < 0;
-      } else if (this.currentAction === 'retreat') {
-        aiKeys.moveLeft = dx > 0;
-        aiKeys.moveRight = dx < 0;
-      }
+    }
+
+    // --- APPLY CURRENT ACTION TO KEYS ---
+    if (this.currentAction === 'attack') aiKeys.attack = true;
+    else if (this.currentAction === 'kick') aiKeys.kick = true;
+    else if (this.currentAction === 'projectile') aiKeys.projectile = true;
+    else if (this.currentAction === 'block') aiKeys.block = true;
+    else if (this.currentAction === 'crouch') aiKeys.crouch = true;
+    else if (this.currentAction === 'powerup') aiKeys.powerup = true;
+    else if (this.currentAction === 'ult1') aiKeys.ult1 = true;
+    else if (this.currentAction === 'ult2') aiKeys.ult2 = true;
+    else if (this.currentAction === 'ultimate') aiKeys.ultimate = true;
+    else if (this.currentAction === 'jump') { 
+        aiKeys.jump = true; 
+        this.currentAction = null; // Jump is a one-frame stroke
+    }
+    else if (this.currentAction === 'approach') {
+      aiKeys.moveRight = dx > 0;
+      aiKeys.moveLeft = dx < 0;
+    } else if (this.currentAction === 'retreat') {
+      aiKeys.moveLeft = dx > 0;
+      aiKeys.moveRight = dx < 0;
     }
 
     return aiKeys;
@@ -128,24 +135,24 @@ class AIController {
     
     // Tự động biến Hỏa Thần nếu đủ 70 Nộ
     if (energy >= 70 && !this.fighter.isPowerUp && this.ultimateCooldown === 0) {
-       keys.powerup = true;
+       this.currentAction = 'powerup';
        this.ultimateCooldown = 60;
        return;
     }
 
-    // ULT2 (O): Sát thương siêu to nhưng Kiệt Sức. Chủ yếu xài chốt liễu.
+    // ULT2 (O): Sát thương siêu to nhưng Kiệt Sức.
     if (energy >= 95 && absDx < 300 && this.ultimateCooldown === 0 && this.difficulty !== 'easy') {
        if (this.opponent.hp < 1500 || this.fighter.hp < 1500) {
-           keys.ult2 = true;
+           this.currentAction = 'ult2';
            this.ultimateCooldown = 300;
            return;
        }
     }
 
-    // ULT1 (I): Rải dam diện rộng an toàn, spam ngay khi đủ 80 Nộ (nhất là Mode Hard)
+    // ULT1 (I): Rải dam diện rộng an toàn, spam ngay khi đủ 80 Nộ 
     if (energy >= 80 && absDx < 250 && this.ultimateCooldown === 0) {
        if (this.difficulty === 'hard' || this._chance(50)) {
-           keys.ult1 = true;
+           this.currentAction = 'ult1';
            this.ultimateCooldown = 150;
            return;
        }
@@ -158,49 +165,46 @@ class AIController {
   _playZenitsu(keys, dx, absDx, isOpponentAhead) {
     const energy = this.fighter.energy || 0;
     
-    // Zenitsu rất mạnh khoảng tầm xam dx > 150 với J1 lao tới.
-    
-    // Kích hoạt Powerup (U - 55 Nộ) để cấu rỉa bất ngờ từ xa cực kì nguy hiểm.
+    // Nộ 55 -> Kích hoạt U (Powerup) cấu rỉa xa cực thốn
     if (energy >= 55 && absDx > 180 && absDx < 450 && this.ultimateCooldown === 0) {
       if (this.difficulty === 'hard' || this._chance(60)) {
-         keys.powerup = true;
-         this.ultimateCooldown = 90;
+         this.currentAction = 'powerup';
+         this.ultimateCooldown = 120;
          return;
       }
     }
 
-    // ULT1 - Lục Liên (I - 80 Nộ): Nhảy lạng lách kinh hoàng
+    // Lục Liên (I - 80 Nộ)
     if (energy >= 80 && absDx < 600 && this.ultimateCooldown === 0) {
       if (this.difficulty === 'hard' || this._chance(60)) {
-         keys.ult1 = true;
+         this.currentAction = 'ult1';
          this.ultimateCooldown = 200;
          return;
       }
     }
 
-    // ULT2 - Thần Tốc (O - 100 Nộ): Dash one-shot toàn bản đồ luôn
+    // Thần Tốc O - 100 nộ
     if (energy >= 100 && this.ultimateCooldown === 0 && this.difficulty !== 'easy') {
-      keys.ult2 = true;
+      this.currentAction = 'ult2';
       this.ultimateCooldown = 300;
       return;
     }
 
-    // Bọn múa: Zenitsu Hard lạm dụng J1 tầm trung để áp sát xé xác địch
+    // Zenitsu Hard chơi cáu: Xài J1 đột kích
     if (this.difficulty === 'hard') {
        if (absDx > 150 && absDx < 350 && this._chance(60)) {
            this.currentAction = 'attack';
-           keys.attack = true;
            return;
        }
     }
 
-    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 150, 320); // Range xa hơn bình thường
+    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 150, 320); 
   }
 
   // --- LOGIC BOT: GENERIC (Nezuko / Inosuke) ---
   _playGeneric(keys, dx, absDx, isOpponentAhead) {
      if (this.fighter.energy >= 100 && this.ultimateCooldown === 0 && this._chance(60)) {
-       keys.ultimate = true;
+       this.currentAction = 'ultimate';
        this.ultimateCooldown = 180;
        return;
      }
@@ -213,36 +217,41 @@ class AIController {
 
     // Easy AI (Ngu ngơ đánh chậm)
     if (this.difficulty === 'easy') {
-      if (absDx < closeRange && rand < 0.4) keys.attack = true;
-      else if (absDx < closeRange && rand < 0.6) keys.kick = true;
+      if (absDx < closeRange && rand < 0.4) this.currentAction = 'attack';
+      else if (absDx < closeRange && rand < 0.6) this.currentAction = 'kick';
       else if (rand < 0.75) this.currentAction = 'approach';
       else if (rand < 0.85) this.currentAction = 'idle';
       else this.currentAction = 'retreat';
       
-      if (this._chance(10)) this.currentAction = 'jump';
+      if (this._chance(10) && this.jumpCooldown === 0) {
+          this.currentAction = 'jump';
+          this.jumpCooldown = 100;
+      }
       return;
     }
 
     // Medium & Hard (Xài kĩ năng tinh quái hơn)
     if (absDx < closeRange && isOpponentAhead) {
-      if (rand < 0.4) keys.attack = true;
-      else if (rand < 0.65) keys.kick = true;
-      else if (rand < 0.75 && this.difficulty === 'hard') keys.crouch = true; // Hard thỉnh thoảng ngồi né
-      else if (rand < 0.85) keys.projectile = true;
+      if (rand < 0.4) this.currentAction = 'attack';
+      else if (rand < 0.65) this.currentAction = 'kick';
+      else if (rand < 0.75 && this.difficulty === 'hard') this.currentAction = 'crouch'; 
+      else if (rand < 0.85) this.currentAction = 'projectile';
       else this.currentAction = 'approach';
     } 
     else if (absDx < midRange) {
-      if (rand < 0.4) keys.projectile = true;
+      if (rand < 0.4) this.currentAction = 'projectile';
       else if (rand < 0.8) this.currentAction = 'approach';
       else this.currentAction = 'retreat';
     }
     else {
-      // Ở xa thì tiến lại gần, bắn đạn rỉa máu
       this.currentAction = 'approach';
-      if (this._chance(30)) keys.projectile = true;
+      if (this._chance(30)) this.currentAction = 'projectile';
     }
 
-    if (this._chance(15)) this.currentAction = 'jump';
+    if (this._chance(15) && this.jumpCooldown === 0) {
+        this.currentAction = 'jump';
+        this.jumpCooldown = this.difficulty === 'hard' ? 40 : 80;
+    }
   }
 
   setFighter(fighter) { this.fighter = fighter; }
