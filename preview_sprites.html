@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sprite Orientation Preview</title>
+    <style>
+        body {
+            background-color: #1a1a2e;
+            color: #fff;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #00d4ff;
+        }
+        .character-section {
+            background-color: #0f0f1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+        .sprite-card {
+            background-color: #222;
+            border: 1px solid #444;
+            border-radius: 8px;
+            padding: 10px;
+            text-align: center;
+            position: relative;
+        }
+        .sprite-header {
+            font-size: 14px;
+            color: #aaa;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .image-container {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 120px; /* Fixed height to compare proportions */
+        }
+        img {
+            max-height: 100%;
+            max-width: 100%;
+            object-fit: contain;
+            /* A light grid background to see transparency and bounding boxes clearly */
+            background-image: linear-gradient(45deg, #333 25%, transparent 25%), 
+                              linear-gradient(-45deg, #333 25%, transparent 25%), 
+                              linear-gradient(45deg, transparent 75%, #333 75%), 
+                              linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+        }
+        .mirrored {
+            transform: scaleX(-1);
+        }
+        .toggle-btn {
+            display: block;
+            margin: 0 auto 30px auto;
+            padding: 12px 24px;
+            background-color: #e6005c;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(230, 0, 92, 0.4);
+            transition: all 0.2s;
+        }
+        .toggle-btn:hover {
+            background-color: #ff1a75;
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Sprite Orientation & Bounding Box Check</h1>
+    <button id="toggleMirrorBtn" class="toggle-btn">Chuyển sang Nhìn Hướng Trái (Mirrored)</button>
+
+    <div id="content"></div>
+
+    <script>
+        const characters = ['tanjiro', 'nezuko', 'zenitsu', 'inosuke'];
+        const poses = ['idle', 'idle_attack', 'jump', 'jump_attack', 'crouch', 'crouch_attack', 'run1', 'run2', 'kick', 'jump_kick', 'crouch_kick'];
+        
+        let isMirrored = false;
+        const btn = document.getElementById('toggleMirrorBtn');
+        const content = document.getElementById('content');
+
+        // Render HTML
+        let html = '';
+        characters.forEach(char => {
+            html += `<div class="character-section"><h2>${char.toUpperCase()}</h2>`;
+            html += `<div class="grid-container">`;
+            
+            // Add poses
+            poses.forEach(pose => {
+                const src = `assets/sprites/${char}_${pose}.png`;
+                html += `
+                    <div class="sprite-card">
+                        <div class="sprite-header">${pose}</div>
+                        <div class="image-container">
+                            <img src="${src}?v=${Date.now()}" class="sprite-img" alt="${pose}">
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Add Sword VFX
+            const vfxSrc = `assets/sprites/vfx_${char}.png`;
+            html += `
+                <div class="sprite-card" style="border-color: #00d4ff;">
+                    <div class="sprite-header" style="color: #00d4ff;">VFX Sword</div>
+                    <div class="image-container">
+                        <img src="${vfxSrc}?v=${Date.now()}" class="sprite-img" alt="vfx sword">
+                    </div>
+                </div>
+            `;
+
+            // Add Kick VFX
+            const vfxKickSrc = `assets/effects/vfx_kick_${char}.png`;
+            html += `
+                <div class="sprite-card" style="border-color: #ff2a6d;">
+                    <div class="sprite-header" style="color: #ff2a6d;">VFX Kick</div>
+                    <div class="image-container" style="background-color: #000;">
+                        <img src="${vfxKickSrc}?v=${Date.now()}" class="sprite-img" alt="vfx kick" style="mix-blend-mode: screen;">
+                    </div>
+                </div>
+            `;
+
+            html += `</div></div>`;
+        });
+        
+        content.innerHTML = html;
+
+        // Toggle logic
+        const images = document.querySelectorAll('.sprite-img');
+        btn.addEventListener('click', () => {
+            isMirrored = !isMirrored;
+            if (isMirrored) {
+                btn.innerText = "Chuyển sang Nhìn Hướng Phải (Gốc)";
+                btn.style.backgroundColor = "#00d4ff";
+                btn.style.boxShadow = "0 4px 15px rgba(0, 212, 255, 0.4)";
+                images.forEach(img => img.classList.add('mirrored'));
+            } else {
+                btn.innerText = "Chuyển sang Nhìn Hướng Trái (Mirrored)";
+                btn.style.backgroundColor = "#e6005c";
+                btn.style.boxShadow = "0 4px 15px rgba(230, 0, 92, 0.4)";
+                images.forEach(img => img.classList.remove('mirrored'));
+            }
+        });
+    </script>
+
+</body>
+</html>

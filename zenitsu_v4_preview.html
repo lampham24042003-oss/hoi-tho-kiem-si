@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zenitsu V4 Meticulous Rebuild Preview</title>
+    <style>
+        body {
+            background-color: #2c3e50;
+            color: white;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        h1 {
+            text-align: center;
+            color: #f1c40f;
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+            font-size: 2.5em;
+            margin-bottom: 5px;
+        }
+        .header-sub {
+            text-align: center;
+            color: #bdc3c7;
+            margin-bottom: 40px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        .card {
+            background: #34495e;
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+            transition: transform 0.2s;
+            border: 2px solid transparent;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            border-color: #f1c40f;
+            box-shadow: 0 0 15px rgba(241, 196, 15, 0.4);
+        }
+        .img-container {
+            width: 100%;
+            height: 250px;
+            /* Chessboard checker pattern to prove transparency */
+            background-color: #eee;
+            background-image: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc),
+                linear-gradient(45deg, #ccc 25%, transparent 25%, transparent 75%, #ccc 75%, #ccc);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 10px;
+            border: 1px solid #2c3e50;
+        }
+        img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+        .title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #ecf0f1;
+            padding: 5px 0;
+            border-top: 1px solid #7f8c8d;
+        }
+        .group-header {
+            grid-column: 1 / -1;
+            font-size: 1.8em;
+            color: #e74c3c;
+            border-bottom: 2px solid #e74c3c;
+            padding-bottom: 10px;
+            margin-top: 30px;
+            padding-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>⚡ Zenitsu V4 Frame-Perfect Rebuild ⚡</h1>
+    <p class="header-sub">Toàn bộ 26 Sprites đã qua bộ lọc ChromaKey bóc tách nền xanh (trong suốt hiển thị caro).</p>
+
+    <div class="grid">
+        <!-- NHÓM 1 -->
+        <div class="group-header">Nhóm 1: Cơ Bản & Di Chuyển</div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_idle.png" alt="idle"></div><div class="title">idle</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_jump.png" alt="jump"></div><div class="title">jump</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch.png" alt="crouch"></div><div class="title">crouch</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_run1.png" alt="run1"></div><div class="title">run1</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_run2.png" alt="run2"></div><div class="title">run2</div></div>
+
+        <!-- NHÓM 2 -->
+        <div class="group-header">Nhóm 2: Đứng Tấn Công</div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch_walk1.png" alt="crouch_walk1"></div><div class="title">crouch_walk1</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch_walk2.png" alt="crouch_walk2"></div><div class="title">crouch_walk2</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_idle_attack.png" alt="idle_attack"></div><div class="title">idle_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_heavy_attack.png" alt="heavy_attack"></div><div class="title">heavy_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_kick.png" alt="kick"></div><div class="title">kick</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_projectile.png" alt="projectile"></div><div class="title">projectile</div></div>
+
+        <!-- NHÓM 3 -->
+        <div class="group-header">Nhóm 3: Cúi Tấn Công</div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch_attack.png" alt="crouch_attack"></div><div class="title">crouch_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_heavy_crouch_attack.png" alt="heavy_crouch_attack"></div><div class="title">heavy_crouch_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch_kick.png" alt="crouch_kick"></div><div class="title">crouch_kick</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_crouch_projectile.png" alt="crouch_projectile"></div><div class="title">crouch_projectile</div></div>
+
+        <!-- NHÓM 4 -->
+        <div class="group-header">Nhóm 4: Không Chiến (Trên không)</div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_jump_attack.png" alt="jump_attack"></div><div class="title">jump_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_heavy_jump_attack.png" alt="heavy_jump_attack"></div><div class="title">heavy_jump_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_jump_kick.png" alt="jump_kick"></div><div class="title">jump_kick</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_jump_projectile.png" alt="jump_projectile"></div><div class="title">jump_projectile</div></div>
+
+        <!-- NHÓM 5 -->
+        <div class="group-header">Nhóm 5: Thần Tốc (Ultimate & Exhaust)</div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate1_charge.png" alt="ultimate1_charge"></div><div class="title">ultimate1_charge</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate1_attack.png" alt="ultimate1_attack"></div><div class="title">ultimate1_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate2_charge.png" alt="ultimate2_charge"></div><div class="title">ultimate2_charge</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate2_attack.png" alt="ultimate2_attack"></div><div class="title">ultimate2_attack</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate_pose.png" alt="ultimate_pose"></div><div class="title">ultimate_pose</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_ultimate_dash.png" alt="ultimate_dash"></div><div class="title">ultimate_dash</div></div>
+        <div class="card"><div class="img-container"><img src="./assets/sprites/zenitsu_exhaust_pose.png" alt="exhaust_pose"></div><div class="title">exhaust_pose</div></div>
+
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>Sprite Preview – Breath of Ashes</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #1a1a2e; font-family: sans-serif; color: #eee; padding: 20px; }
+  h1 { text-align: center; color: #00d4ff; margin-bottom: 6px; font-size: 1.4rem; }
+  .hint { text-align:center; color:#666; font-size:.75rem; margin-bottom: 16px; }
+
+  .bg-toggle { display:flex; gap:10px; justify-content:center; margin-bottom:18px; flex-wrap:wrap; }
+  .bg-toggle button {
+    padding: 6px 14px; border: 1px solid #444; background:#16213e;
+    color:#ccc; border-radius: 6px; cursor:pointer; font-size:.8rem;
+    transition: background .15s;
+  }
+  .bg-toggle button:hover { background: #1e3a5f; }
+
+  .char-section { margin-bottom: 28px; }
+  .char-section h2 { font-size: .9rem; color: #adf; margin-bottom: 8px; padding-left: 4px; }
+
+  .pose-row { display: flex; gap: 12px; flex-wrap: wrap; }
+
+  .pose-card {
+    background: #0e1829;
+    border: 1px solid #2a3a5a;
+    border-radius: 10px;
+    padding: 10px 12px;
+    text-align: center;
+    min-width: 120px;
+  }
+  .pose-label { font-size: .65rem; color: #888; margin-bottom: 6px; text-transform: uppercase; letter-spacing: .05em; }
+  .direction-row { display: flex; gap: 8px; justify-content: center; }
+
+  .sprite-wrap {
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+  }
+  .dir-label { font-size: .6rem; color: #555; }
+
+  .sprite-wrap img {
+    width: 80px;
+    height: 110px;
+    object-fit: contain;
+    border-radius: 5px;
+    border: 1px solid #222;
+    /* default: checkerboard */
+    background-image:
+      linear-gradient(45deg, #333 25%, transparent 25%),
+      linear-gradient(-45deg, #333 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #333 75%),
+      linear-gradient(-45deg, transparent 75%, #333 75%);
+    background-size: 10px 10px;
+    background-position: 0 0, 0 5px, 5px -5px, -5px 0px;
+    background-color: #1a1a1a;
+  }
+
+  /* Mirrored = scaleX(-1) */
+  .mirrored { transform: scaleX(-1); }
+
+  .divider { border: none; border-top: 1px solid #1e2d45; margin: 20px 0; }
+</style>
+</head>
+<body>
+<h1>🗡️ Sprite Mirror Preview</h1>
+<p class="hint">Trái = ← (A pressed) &nbsp;|&nbsp; Phải = → (D pressed) &nbsp;|&nbsp; Nền checker = transparent OK</p>
+
+<div class="bg-toggle">
+  <button onclick="setBg('checker')">■ Checker</button>
+  <button onclick="setBg('dark')"  style="background:#06080f">◼ Tối</button>
+  <button onclick="setBg('forest')" style="background:#1a3a1a">◼ Forest BG</button>
+  <button onclick="setBg('brown')" style="background:#5c2a0a">◼ Nâu</button>
+  <button onclick="setBg('white')" style="background:#ddd;color:#333">◻ Trắng</button>
+</div>
+
+<div id="root"></div>
+
+<script>
+const chars = [
+  { name: 'Tanjiro',  id: 'tanjiro'  },
+  { name: 'Nezuko',   id: 'nezuko'   },
+  { name: 'Zenitsu',  id: 'zenitsu'  },
+  { name: 'Inosuke',  id: 'inosuke'  },
+];
+const poses = [
+  { key: 'idle',   label: 'Idle (đứng)' },
+  { key: 'jump',   label: 'Jump (nhảy)' },
+  { key: 'crouch', label: 'Crouch (cúi)' },
+];
+
+const root = document.getElementById('root');
+
+for (const c of chars) {
+  const section = document.createElement('div');
+  section.className = 'char-section';
+  section.innerHTML = `<h2>${c.name}</h2>`;
+
+  const row = document.createElement('div');
+  row.className = 'pose-row';
+
+  for (const p of poses) {
+    const card = document.createElement('div');
+    card.className = 'pose-card';
+    card.innerHTML = `
+      <div class="pose-label">${p.label}</div>
+      <div class="direction-row">
+        <div class="sprite-wrap">
+          <img src="assets/sprites/${c.id}_${p.key}.png?t=${Date.now()}"
+               class="mirrored"
+               alt="${c.id} ${p.key} LEFT"
+               onerror="this.style.border='2px solid red'">
+          <span class="dir-label">← Trái (A)</span>
+        </div>
+        <div class="sprite-wrap">
+          <img src="assets/sprites/${c.id}_${p.key}.png?t=${Date.now()}"
+               alt="${c.id} ${p.key} RIGHT"
+               onerror="this.style.border='2px solid red'">
+          <span class="dir-label">→ Phải (D)</span>
+        </div>
+      </div>`;
+    row.appendChild(card);
+  }
+
+  section.appendChild(row);
+  root.appendChild(section);
+
+  const hr = document.createElement('hr');
+  hr.className = 'divider';
+  root.appendChild(hr);
+}
+
+/* ── Background switcher ─────────────────────────────── */
+const CHECKER = `
+  linear-gradient(45deg,#333 25%,transparent 25%),
+  linear-gradient(-45deg,#333 25%,transparent 25%),
+  linear-gradient(45deg,transparent 75%,#333 75%),
+  linear-gradient(-45deg,transparent 75%,#333 75%)`.trim();
+
+const BG_MAP = {
+  checker: { image: CHECKER,  color: '#1a1a1a' },
+  dark:    { image: 'none',   color: '#06080f' },
+  forest:  { image: 'none',   color: '#1a3a1a' },
+  brown:   { image: 'none',   color: '#5c2a0a' },
+  white:   { image: 'none',   color: '#dddddd' },
+};
+
+function setBg(type) {
+  const { image, color } = BG_MAP[type] || BG_MAP.checker;
+  for (const img of document.querySelectorAll('.sprite-wrap img')) {
+    img.style.backgroundImage = image;
+    img.style.backgroundColor = color;
+  }
+}
+</script>
+</body>
+</html>

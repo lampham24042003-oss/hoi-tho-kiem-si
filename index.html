@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hơi Thở Kiếm Sĩ | Game Chiến Đấu Anime</title>
+  <meta name="description" content="Game chiến đấu 2D anime phong cách Demon Slayer. Chọn nhân vật và chiến đấu! Tạo bởi Lam Phạm - BabyBlue">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<!-- MASTER MUTE BUTTON -->
+<button id="btn-master-mute" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: rgba(0,0,0,0.6); border: 1px solid rgba(255,255,255,0.2); color: #fff; width: 36px; height: 36px; border-radius: 50%; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(4px); transition: transform 0.2s, background 0.2s;" title="Tắt/Bật Âm Thanh">
+  🔊
+</button>
+
+<!-- ══════════════════════════════════════════
+     INIT SCREEN (Click to Start)
+═══════════════════════════════════════════ -->
+<div id="init-screen" class="screen active">
+  <div class="init-content">
+    <div class="init-author">VŨ TRỤ KIMETSU NO YAIBA<br><span class="init-presents">Lam Phạm - BabyBlue mời bạn trải nghiệm</span></div>
+    <div class="init-title-wrapper">
+      <h1 class="init-title-main">鬼滅の刃</h1>
+      <h2 class="init-title-sub">HƠI THỞ KIẾM SĨ</h2>
+    </div>
+    <div class="init-action">
+      <span class="init-pulse">◆ NHẤP CHUỘT ĐỂ BẮT ĐẦU ◆</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SPLASH SCREEN
+═══════════════════════════════════════════ -->
+<div id="splash-screen" class="screen">
+  <p class="splash-line splash-sub">Lam Phạm - BabyBlue trân trọng giới thiệu</p>
+  <p class="splash-line splash-title">A game by Lam Phạm - BabyBlue</p>
+  <h1 class="splash-line splash-game-title">Hơi Thở Kiếm Sĩ</h1>
+</div>
+
+<!-- ══════════════════════════════════════════
+     LOADING SCREEN
+═══════════════════════════════════════════ -->
+<div id="loading-screen" class="screen">
+  <p class="panel-title">Đang tải tài nguyên...</p>
+  <div class="loading-bar-wrap">
+    <div class="loading-bar-fill"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN MENU
+═══════════════════════════════════════════ -->
+<div id="main-menu" class="screen">
+  <div class="menu-content">
+    <div class="game-title-wrapper">
+      <div class="game-title-main">Hơi Thở<br>Kiếm Sĩ</div>
+      <div class="game-title-sub">DEMON SLAYER FIGHTING GAME</div>
+    </div>
+    <div class="creator-credit">Tạo bởi Lam Phạm - BabyBlue</div>
+    <div class="divider"></div>
+    <button id="btn-offline" class="menu-btn menu-btn-primary">⚔️ Chơi Offline</button>
+    <button id="btn-training" class="menu-btn menu-btn-secondary" style="border-color: #aa88ff; color: #aa88ff; background: rgba(170,136,255,0.05); margin-top: 8px;">🎯 Phòng Tập (Training)</button>
+    <button id="btn-online" class="menu-btn menu-btn-secondary" style="margin-top: 8px;">🌐 Chơi Online</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     DIFFICULTY SELECT
+═══════════════════════════════════════════ -->
+<div id="difficulty-select" class="screen">
+  <div class="panel">
+    <button class="panel-back-btn" onclick="document.getElementById('main-menu').classList.add('active'); document.getElementById('difficulty-select').classList.remove('active');">← Quay lại</button>
+    <h2 class="panel-title">⚔️ Chọn Độ Khó</h2>
+    <div class="difficulty-grid">
+      <button id="btn-diff-easy" class="diff-btn easy">
+        <span class="diff-icon">🌿</span>
+        <span class="diff-name" style="color:#44ff88">Dễ</span>
+        <span class="diff-desc">Bot chậm, tấn công ngẫu nhiên. Phù hợp người mới chơi.</span>
+      </button>
+      <button id="btn-diff-medium" class="diff-btn medium">
+        <span class="diff-icon">⚡</span>
+        <span class="diff-name" style="color:#ffcc00">Trung Bình</span>
+        <span class="diff-desc">Bot có combo cơ bản và đỡ đòn đôi khi.</span>
+      </button>
+      <button id="btn-diff-hard" class="diff-btn hard">
+        <span class="diff-icon">🔥</span>
+        <span class="diff-name" style="color:#ff4444">Khó</span>
+        <span class="diff-desc">Bot thông minh: đỡ đòn, né, dùng tuyệt chiêu.</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CHARACTER SELECT
+═══════════════════════════════════════════ -->
+<div id="char-select" class="screen">
+  <div class="panel" style="max-width: 940px;">
+    <button id="btn-char-back" class="panel-back-btn">← Quay lại</button>
+    <h2 id="char-select-title" class="panel-title">🗡️ Chọn Nhân Vật</h2>
+
+    <div class="char-select-layout">
+      <!-- Grid of characters -->
+      <div>
+        <div id="char-select-grid" class="char-select-grid"></div>
+        <div style="margin-top: 16px;">
+          <label style="color: #fff; font-family: 'Cinzel', serif; font-size: 12px; margin-bottom: 8px; display: block; letter-spacing: 0.05em;">🗺️ CHỌN BẢN ĐỒ</label>
+          <div style="display: flex; gap: 12px; align-items: flex-start; margin-bottom: 12px;">
+            <select id="stage-select" style="flex: 1; padding: 10px; background: rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.2); color: var(--gold); font-size: 14px; font-family: 'Cinzel', serif; border-radius: 4px; outline: none; cursor: pointer;">
+              <option value="bg_sagiri">Núi Sagiri</option>
+              <option value="bg_natagumo">Núi Natagumo</option>
+              <option value="bg_mugen_train">Tàu Vô Tận</option>
+              <option value="bg_entertainment_district">Kĩ viện trấn</option>
+              <option value="bg_swordsmith_village">Làng thợ rèn</option>
+              <option value="bg_infinity_castle">Vô Hạn Thành</option>
+              <option value="bg_fujikasane">Núi Fujikasane</option>
+              <option value="bg_butterfly_mansion">Trang Viên Hồ Điệp</option>
+              <option value="bg_tsuzumi_mansion">Biệt thự Tsuzumi</option>
+              <option value="bg_kumotori">Núi Kumotori</option>
+              <option value="bg_corps_hq">Trụ sở Sát Quỷ Đoàn</option>
+            </select>
+            <img id="stage-preview-img" src="assets/bg/bg_sagiri.png" style="width: 144px; height: 81px; object-fit: cover; border-radius: 4px; border: 1px solid rgba(255,255,255,0.2);">
+          </div>
+        </div>
+        <div style="display: flex; gap: 12px;">
+          <button id="btn-char-confirm" class="menu-btn menu-btn-primary w-full" disabled>
+            Xác Nhận ✓
+          </button>
+        </div>
+      </div>
+
+      <!-- Character Preview -->
+      <div class="char-preview-panel">
+        <img id="char-preview-img" src="" alt="" style="height: 180px; object-fit: contain;">
+        <div id="char-preview-name" class="char-preview-name" style="color: #fff">Chọn nhân vật</div>
+        <div id="char-preview-tags" class="char-preview-tags" style="display:flex; gap:8px; justify-content:center; margin-bottom:10px;"></div>
+        <div id="char-preview-desc" class="char-preview-desc"></div>
+        
+        <!-- Stars stats -->
+        <div id="char-preview-stats" class="char-preview-stats" style="margin-top:10px;"></div>
+
+        <div class="divider" style="width: 100%"></div>
+        <div class="char-preview-ultimate-label">Tuyệt Chiêu</div>
+        <div id="char-preview-ultimate" class="char-preview-ultimate" style="margin-bottom:15px;">—</div>
+
+        <details id="char-preview-mechanics" class="char-preview-mechanics">
+          <summary>Chi tiết sức mạnh</summary>
+          <div id="char-preview-mechanics-text"></div>
+        </details>
+      </div>
+    </div>
+
+    <!-- Controls hint -->
+    <div style="margin-top: 18px; padding: 14px; background: rgba(0,0,0,0.3); border-radius: 10px;">
+      <div style="font-family: 'Cinzel', serif; font-size: 12px; color: var(--primary); margin-bottom: 10px; text-align: center; letter-spacing: 0.1em;">ĐIỀU KHIỂN</div>
+      <div class="controls-grid">
+        <div class="control-item"><span class="control-key">A / D</span><span class="control-label">Di chuyển</span></div>
+        <div class="control-item"><span class="control-key">W</span><span class="control-label">Nhảy</span></div>
+        <div class="control-item"><span class="control-key">S</span><span class="control-label">Cúi người</span></div>
+        <div class="control-item"><span class="control-key">P</span><span class="control-label">Chém kiếm</span></div>
+        <div class="control-item"><span class="control-key">K</span><span class="control-label">Đá</span></div>
+        <div class="control-item"><span class="control-key">L</span><span class="control-label">Phóng sóng kiếm</span></div>
+        <div class="control-item"><span class="control-key">B</span><span class="control-label">Đỡ đòn (Block)</span></div>
+        <div class="control-item"><span class="control-key">Space</span><span class="control-label">Lộn tránh (Dodge)</span></div>
+        <div class="control-item"><span class="control-key" style="color:#ffd700">Q</span><span class="control-label" style="color:var(--gold)">Tuyệt chiêu ⚡</span></div>
+        <div class="control-item"><span class="control-key">ESC</span><span class="control-label">Tạm dừng</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     GAME SCREEN
+═══════════════════════════════════════════ -->
+<div id="game-screen" class="screen">
+  <button id="btn-game-exit" style="position: absolute; bottom: 25px; left: 25px; z-index: 100; padding: 10px 20px; background: rgba(255, 50, 50, 0.15); border: 1px solid rgba(255, 50, 50, 0.6); border-radius: 8px; color: #ff6666; font-family: 'Cinzel', serif; font-size: 14px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(255, 0, 0, 0.2);" onmouseover="this.style.background='rgba(255, 50, 50, 0.4)'; this.style.color='#ffffff'; this.style.boxShadow='0 0 15px rgba(255,50,50,0.5)';" onmouseout="this.style.background='rgba(255, 50, 50, 0.15)'; this.style.color='#ff6666'; this.style.boxShadow='0 0 10px rgba(255, 0, 0, 0.2)';">← THOÁT TRẬN</button>
+  <button id="btn-heal-dummy" style="display: none; position: absolute; top: 100px; left: 50%; transform: translateX(-50%); z-index: 100; padding: 8px 16px; background: rgba(50, 255, 50, 0.15); border: 1px solid rgba(50, 255, 50, 0.6); border-radius: 8px; color: #66ff66; font-family: 'Cinzel', serif; font-size: 13px; font-weight: bold; cursor: pointer; transition: 0.2s; box-shadow: 0 0 10px rgba(0, 255, 0, 0.2);" onmouseover="this.style.background='rgba(50, 255, 50, 0.4)'; this.style.color='#ffffff';" onmouseout="this.style.background='rgba(50, 255, 50, 0.15)'; this.style.color='#66ff66';">↻ HỒI MÁU BÙ NHÌN</button>
+  <canvas id="game-canvas"></canvas>
+  <div class="game-controls-hint">A/D: Di chuyển · W: Nhảy · P: Chém · K: Đá · L: Sóng · B: Đỡ · Space: Tránh · Q: Tuyệt chiêu · ESC: Dừng</div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ONLINE NICKNAME
+═══════════════════════════════════════════ -->
+<div id="online-nickname" class="screen">
+  <div class="panel" style="max-width: 440px;">
+    <button class="panel-back-btn" onclick="document.getElementById('main-menu').classList.add('active'); document.getElementById('online-nickname').classList.remove('active');">← Quay lại</button>
+    <h2 class="panel-title">🌐 Đặt Tên Hiển Thị</h2>
+    <div class="flex-col">
+      <input id="nickname-input" class="input-field" type="text"
+        placeholder="Nhập tên của bạn (2-20 ký tự)" maxlength="20" autocomplete="off">
+      <div id="nickname-error" class="error-text"></div>
+      <button id="btn-nickname-submit" class="menu-btn menu-btn-primary">Vào Sảnh Chờ →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ONLINE LOBBY
+═══════════════════════════════════════════ -->
+<div id="online-lobby" class="screen">
+  <div class="panel" style="max-width: 600px;">
+    <h2 class="panel-title">🏯 Sảnh Chờ Online</h2>
+    <div id="lobby-my-name" class="lobby-my-name">Đang kết nối...</div>
+
+    <div class="lobby-header">
+      <input id="lobby-search-input" class="input-field lobby-search" type="text" placeholder="🔍 Tìm người chơi...">
+      <button id="btn-lobby-search" class="small-btn">Tìm</button>
+      <button id="btn-refresh-lobby" class="small-btn">🔄</button>
+    </div>
+
+    <div id="lobby-player-list" class="lobby-player-list">
+      <div class="lobby-empty">Đang tải danh sách...</div>
+    </div>
+
+    <div class="divider" style="margin-top: 16px;"></div>
+    <button id="btn-back-lobby" class="menu-btn" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); margin-top: 12px;">← Thoát</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ONLINE CHARACTER SELECT
+═══════════════════════════════════════════ -->
+<div id="online-char-select" class="screen">
+  <div class="panel" style="max-width: 680px;">
+    <h2 id="online-char-select-title" class="panel-title">🗡️ Chọn Nhân Vật</h2>
+    <div id="online-char-select-grid" class="char-select-grid" style="grid-template-columns: repeat(4, 1fr);"></div>
+    <div style="margin-top: 16px;">
+      <button id="btn-online-char-confirm" class="menu-btn menu-btn-primary" disabled>Xác Nhận ✓</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     RESULT SCREEN
+═══════════════════════════════════════════ -->
+<div id="result-screen" class="screen">
+  <div class="result-content">
+    <h1 id="result-title" class="result-title">Kết Quả</h1>
+    <p id="result-subtitle" class="result-subtitle"></p>
+    <img id="result-img" class="result-img" src="" alt="Winner">
+    <div class="result-btn-row">
+      <button id="btn-rematch" class="menu-btn menu-btn-primary" style="width: 200px;">🔁 Đấu Lại</button>
+      <button id="btn-back-menu" class="menu-btn" style="width: 200px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.15); color: var(--text);">🏠 Menu Chính</button>
+    </div>
+    <div style="font-family: 'Cinzel', serif; font-size: 12px; color: rgba(255,255,255,0.2); margin-top: 20px;">
+      Lam Phạm - BabyBlue
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     INVITE POPUP
+═══════════════════════════════════════════ -->
+<div id="invite-popup">
+  <div class="invite-popup-box">
+    <div class="invite-popup-title">⚔️ Lời Mời Thách Đấu</div>
+    <p style="color: var(--text-muted); font-size: 15px;">
+      <strong id="invite-from-name" style="color: var(--primary)"></strong>
+      muốn thách đấu với bạn!
+    </p>
+    <div class="invite-btn-row">
+      <button id="btn-invite-accept" class="btn-invite-accept">✓ Chấp Nhận</button>
+      <button id="btn-invite-decline" class="btn-invite-decline">✗ Từ Chối</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TOAST
+═══════════════════════════════════════════ -->
+<div id="toast"></div>
+
+<!-- ══════════════════════════════════════════
+     SCRIPTS
+═══════════════════════════════════════════ -->
+<script src="js/audio.js?v=37"></script>
+<script src="js/characters_v3.js?v=37"></script>
+<script src="js/effects_v3.js?v=37"></script>
+<script src="js/ai.js?v=37"></script>
+<script src="js/online.js?v=37"></script>
+<script src="js/game_v3.js?v=37"></script>
+<script src="js/tanjiro.js?v=37"></script>
+<script src="js/zenitsu.js?v=37"></script>
+<script src="js/main.js?v=37"></script>
+
+<!-- Socket.IO (loaded conditionally for online mode) -->
+<script>
+  // Polyfill for io if server not running
+  if (typeof io === 'undefined') {
+    window.io = function() {
+      return {
+        on: () => {}, emit: (ev, data, cb) => { if(cb) cb({success: false, error:'Server chưa khởi động'}); },
+        disconnect: () => {}, id: 'local'
+      };
+    };
+  }
+</script>
+<script src="http://localhost:3000/socket.io/socket.io.js" async defer onerror="/* server not running, using fallback */"></script>
+
+</body>
+</html>
