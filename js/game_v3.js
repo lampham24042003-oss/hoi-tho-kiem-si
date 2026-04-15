@@ -1038,8 +1038,6 @@ class GameEngine {
       });
       // CRITICAL FIX: Effects must continue to update so impacts decay and particles move!
       Effects.update();
-      // Also update target's hit stun flashing if needed
-      target.isFlinching = true;  
       return;
     }
 
