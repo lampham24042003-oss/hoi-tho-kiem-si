@@ -15,9 +15,9 @@ class AIController {
 
   _getBaseInterval() {
     switch (this.difficulty) {
-      case 'easy':   return 60 + Math.random() * 40;  
-      case 'medium': return 30 + Math.random() * 20;  
-      case 'hard':   return 10 + Math.random() * 10;    
+      case 'easy':   return 40 + Math.random() * 20;  // 0.6s - 1.0s
+      case 'medium': return 15 + Math.random() * 15;  // 0.25s - 0.5s
+      case 'hard':   return 4 + Math.random() * 6;    // 0.06s - 0.16s (Extremely fast reactions)
     }
   }
 
@@ -57,16 +57,20 @@ class AIController {
       
       // Reactive Perfect Counter Block 
       if (opponentAttacking && absDx < 160 && isOpponentAhead && this.blockCooldown === 0) {
-        if (this.difficulty === 'hard' && this._chance(85)) {
-          this.currentAction = 'block';
-          this.blockCooldown = 25; 
-        } else if (this.difficulty === 'medium' && this._chance(40)) {
-          this.currentAction = 'block';
-          this.blockCooldown = 45;
+        if (this.difficulty === 'hard' && this._chance(98)) {
+           this.currentAction = 'block';
+           this.blockCooldown = 15;
+           return;
+        } else if (this.difficulty === 'medium' && this._chance(65)) {
+           this.currentAction = 'block';
+           this.blockCooldown = 40;
+           return;
+        } else if (this.difficulty === 'easy' && this._chance(25)) {
+           this.currentAction = 'block';
+           this.blockCooldown = 90;
+           return;
         }
-      }
-
-      // Dodge Projectile
+      } // Dodge Projectile
       if (this.opponent.projectiles && this.opponent.projectiles.length > 0) {
         const threat = this.opponent.projectiles.find(p =>
           Math.abs(p.y - this.fighter.y) < 80 &&
@@ -151,14 +155,14 @@ class AIController {
 
     // ULT1 (I): Rải dam diện rộng an toàn, spam ngay khi đủ 80 Nộ 
     if (energy >= 80 && absDx < 250 && this.ultimateCooldown === 0) {
-       if (this.difficulty === 'hard' || this._chance(50)) {
+       if (this.difficulty === 'hard' || this._chance(60)) {
            this.currentAction = 'ult1';
-           this.ultimateCooldown = 150;
+           this.ultimateCooldown = 120;
            return;
        }
     }
 
-    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 130, 250);
+    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 140, 260);
   }
 
   // --- LOGIC BOT: ZENITSU ---
@@ -192,13 +196,13 @@ class AIController {
 
     // Zenitsu Hard chơi cáu: Xài J1 đột kích
     if (this.difficulty === 'hard') {
-       if (absDx > 150 && absDx < 350 && this._chance(60)) {
+       if (absDx >= 110 && absDx < 380 && this._chance(75)) {
            this.currentAction = 'attack';
            return;
        }
     }
 
-    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 150, 320); 
+    this._selectStandardAction(keys, dx, absDx, isOpponentAhead, 160, 320); 
   }
 
   // --- LOGIC BOT: GENERIC (Nezuko / Inosuke) ---
@@ -232,25 +236,25 @@ class AIController {
 
     // Medium & Hard (Xài kĩ năng tinh quái hơn)
     if (absDx < closeRange && isOpponentAhead) {
-      if (rand < 0.4) this.currentAction = 'attack';
-      else if (rand < 0.65) this.currentAction = 'kick';
-      else if (rand < 0.75 && this.difficulty === 'hard') this.currentAction = 'crouch'; 
-      else if (rand < 0.85) this.currentAction = 'projectile';
+      if (rand < 0.45) this.currentAction = 'attack';
+      else if (rand < 0.70) this.currentAction = 'kick';
+      else if (rand < 0.85 && this.difficulty === 'hard') this.currentAction = 'crouch'; 
+      else if (rand < 0.90) this.currentAction = 'projectile';
       else this.currentAction = 'approach';
     } 
     else if (absDx < midRange) {
-      if (rand < 0.4) this.currentAction = 'projectile';
-      else if (rand < 0.8) this.currentAction = 'approach';
+      if (rand < 0.35) this.currentAction = 'projectile';
+      else if (rand < 0.85) this.currentAction = 'approach';
       else this.currentAction = 'retreat';
     }
     else {
       this.currentAction = 'approach';
-      if (this._chance(30)) this.currentAction = 'projectile';
+      if (this._chance(35)) this.currentAction = 'projectile';
     }
 
-    if (this._chance(15) && this.jumpCooldown === 0) {
+    if (this._chance(20) && this.jumpCooldown === 0) {
         this.currentAction = 'jump';
-        this.jumpCooldown = this.difficulty === 'hard' ? 40 : 80;
+        this.jumpCooldown = this.difficulty === 'hard' ? 30 : 70;
     }
   }
 
