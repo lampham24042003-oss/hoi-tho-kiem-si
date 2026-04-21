@@ -352,6 +352,32 @@ class NezukoFighter extends Fighter {
   }
 
   // ─────────────────────────────────────────────
+  //  SPRITE POSITIONING
+  // ─────────────────────────────────────────────
+
+  _drawCharacterSprite(ctx, cx, cy, scale) {
+    let offsetY = 0;
+    let customScale = scale;
+    const currentSprite = this._getCurrentSprite();
+
+    // Run poses: push down nhẹ như Zenitsu/Inosuke
+    if (currentSprite === this.sprites.run1 || currentSprite === this.sprites.run2) {
+      offsetY = this.h * 0.08;
+    }
+    // Crouch + Dodge: kéo xuống 35% để chân chạm đất + thu nhỏ tí để cân tỉ lệ
+    else if (this.isCrouching || this.isDodging) {
+      offsetY = this.h * 0.35;
+      customScale *= 0.88;
+    }
+    // Exhaust pose: nằm sát đất
+    else if (currentSprite === this.sprites.exhaust_pose) {
+      offsetY = this.h * 0.40;
+    }
+
+    super._drawCharacterSprite(ctx, cx, cy + offsetY, customScale);
+  }
+
+  // ─────────────────────────────────────────────
   //  INPUT HANDLER
   // ─────────────────────────────────────────────
 
