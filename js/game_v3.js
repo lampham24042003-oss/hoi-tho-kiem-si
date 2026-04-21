@@ -349,8 +349,12 @@ class Fighter {
     const pivot = this.swordPivotWorld;
     const dir = this.facingRight ? 1 : -1;
     AudioManager.projectile();
+
+    // Spawn cách vị trí hiện tại ít nhất 40px để tránh spawn thẳng trong hitbox mục tiêu khi đứng gần
+    const spawnX = pivot.x + dir * 40;
+
     this.projectiles.push({
-      x: pivot.x,
+      x: spawnX,
       y: pivot.y,
       vx: dir * 9,
       vy: 0,
@@ -503,6 +507,17 @@ class Fighter {
     if (this.comboTimer > 0) this.comboTimer--;
     else this.comboCount = 0;
 
+    // ── Flinch countdown ────────────────────────────────────────
+    // isFlinching được set bởi các character-specific ultimate combos.
+    // Nếu không có countdown thì isFlinching bị kẹt vĩnh viễn → lock input.
+    if (this.isFlinching && this.flinchTimer !== undefined) {
+      if (this.flinchTimer > 0) {
+        this.flinchTimer--;
+      } else {
+        this.isFlinching = false;
+      }
+    }
+
     // Update projectiles
     for (let i = this.projectiles.length - 1; i >= 0; i--) {
       const p = this.projectiles[i];
@@ -532,10 +547,8 @@ class Fighter {
     const cx = this.centerX + shake.x;
     const cy = this.centerY + shake.y;
 
-    // Hit flash
-    if (this.hitFlash > 0 && this.hitFlash % 2 === 0) {
-      ctx.filter = 'brightness(3) saturate(0)';
-    }
+    // Kỹ thuật tối ưu (Optimized Hit Flash): KHÔNG dùng ctx.filter vì trên ảnh 1024x1024 sẽ lòi RAM
+    let isFlashing = (this.hitFlash > 0 && this.hitFlash % 2 === 0);
 
     // Ghost trail when dodging
     if (this.isDodging) {
@@ -544,15 +557,27 @@ class Fighter {
       ctx.globalAlpha = 1.0;
     }
 
-    // Aura glow when energy is full
+    // Tối ưu hóa (Optimized Aura Glow): Rollback về thuật toán gốc ShadowBlur của Game.
+    // Lỗi viền đen và bóng mờ kỳ dị hoàn toàn là do các thuật toán vẽ thủ công trước đó.
+    // Engine gốc đã xử lý việc này hoàn hảo nhất.
     if (this.energy >= MAX_ENERGY) {
       const t = Date.now() / 500;
-      ctx.shadowColor = this.charData.swordGlow;
+      ctx.shadowColor = this.charData.swordGlow || '#ffffff';
       ctx.shadowBlur = 20 + Math.sin(t) * 10;
     }
 
     // Draw character body
-    this._drawCharacterSprite(ctx, cx, cy, 1.0);
+    if (isFlashing) {
+      // Cách flash siêu nhẹ: vẽ sprite với globalComposite = 'lighter' và sáng tối đa
+      ctx.save();
+      ctx.globalAlpha = 1.0;
+      ctx.globalCompositeOperation = 'lighter';
+      this._drawCharacterSprite(ctx, cx, cy, 1.0);
+      this._drawCharacterSprite(ctx, cx, cy, 1.0);
+      ctx.restore();
+    } else {
+      this._drawCharacterSprite(ctx, cx, cy, 1.0);
+    }
 
     // Draw ultimate dash aura
     if (this.isUltimateDash) {
@@ -831,6 +856,10 @@ class GameEngine {
       this.p1 = new TanjiroFighter(p1Data, false, canvas.width * 0.25, canvas.height, true);
     } else if (p1Data.id === 'zenitsu') {
       this.p1 = new ZenitsuFighter(p1Data, false, canvas.width * 0.25, canvas.height, true);
+    } else if (p1Data.id === 'inosuke') {
+      this.p1 = new InosukeFighter(p1Data, false, canvas.width * 0.25, canvas.height, true);
+    } else if (p1Data.id === 'nezuko') {
+      this.p1 = new NezukoFighter(p1Data, false, canvas.width * 0.25, canvas.height, true);
     } else {
       this.p1 = new Fighter(p1Data, false, canvas.width * 0.25, canvas.height, true);
     }
@@ -839,6 +868,10 @@ class GameEngine {
       this.p2 = new TanjiroFighter(p2Data, true, canvas.width * 0.75, canvas.height, false);
     } else if (p2Data.id === 'zenitsu') {
       this.p2 = new ZenitsuFighter(p2Data, true, canvas.width * 0.75, canvas.height, false);
+    } else if (p2Data.id === 'inosuke') {
+      this.p2 = new InosukeFighter(p2Data, true, canvas.width * 0.75, canvas.height, false);
+    } else if (p2Data.id === 'nezuko') {
+      this.p2 = new NezukoFighter(p2Data, true, canvas.width * 0.75, canvas.height, false);
     } else {
       this.p2 = new Fighter(p2Data, true, canvas.width * 0.75, canvas.height, false);
     }
@@ -946,10 +979,11 @@ class GameEngine {
     if (this.state === 'paused') return;
 
     // ── COUNTDOWN ───────────────────────────────────────────────
+    // Đếm ngược chỉ là visual, TẤT CẢ các nút (di chuyển & chiến đấu) đều có hiệu lực ngay lập tức
     if (this.state === 'countdown') {
       this.countdownTimer--;
       if (this.countdownTimer <= 0) this.state = 'playing';
-      return;
+      // Không return ở đây nữa để toàn bộ game logic bên dưới (nhận input, va chạm) vẫn chạy bình thường.
     }
 
     if (CinematicOverlay.isActive()) {
@@ -968,18 +1002,44 @@ class GameEngine {
       let target = attacker.ultimateDashTarget;
 
       attacker.ultimateDashTimer--;
-      // dash rapidly
-      attacker.x += (attacker.ultimateDashTargetX - attacker.x) * 0.3;
-      
-      // Zenitsu Zig-Zag logic for U (ULT1) and I (ULT2)
-      if (attacker.charData && attacker.charData.id === 'zenitsu' && (attacker.currentAttackVariant === 'ULT1' || attacker.currentAttackVariant === 'ULT2')) {
-          const jumpHeight = 100;
-          if (Math.floor(attacker.ultimateDashTimer / 2) % 2 === 0) {
-              attacker.y = attacker.groundY - attacker.h - jumpHeight;
-          } else {
-              attacker.y = attacker.groundY - attacker.h + (jumpHeight / 3);
+
+      // ── Inosuke ULT_O (Đầu Liệt): STANDS IN PLACE — swords fly to target, character stays put ──
+      const isInosukeUltO = attacker.charData && attacker.charData.id === 'inosuke'
+                            && attacker.currentAttackVariant === 'ULT_O';
+
+      if (isInosukeUltO) {
+          // Inosuke does NOT move — just face the target and stay grounded
+          attacker.facingRight = (attacker.ultimateDashTarget && attacker.ultimateDashTarget.x > attacker.x);
+          attacker.y = attacker.groundY - attacker.h; // snap to ground
+          attacker.onGround = true;
+          attacker.isJumping = false; // CRITICAL: prevent getting stuck in jump pose if cast mid-air
+          attacker.vy = 0;
+      } else {
+          // Normal dash: move rapidly toward target
+          attacker.x += (attacker.ultimateDashTargetX - attacker.x) * 0.3;
+
+          // Zenitsu Zig-Zag for ULT1 / ULT2
+          if (attacker.charData && attacker.charData.id === 'zenitsu' &&
+              (attacker.currentAttackVariant === 'ULT1' || attacker.currentAttackVariant === 'ULT2')) {
+              const jumpHeight = 100;
+              if (Math.floor(attacker.ultimateDashTimer / 2) % 2 === 0) {
+                  attacker.y = attacker.groundY - attacker.h - jumpHeight;
+              } else {
+                  attacker.y = attacker.groundY - attacker.h + (jumpHeight / 3);
+              }
+          }
+
+          // Inosuke ULT1 (Viên Chuyển Toàn Nha): spin-orbit around target during approach
+          if (attacker.charData && attacker.charData.id === 'inosuke' &&
+              attacker.currentAttackVariant === 'ULT1') {
+              const orbitAngle = (Date.now() / 80) % (Math.PI * 2);
+              const radius = 60;
+              if (attacker.ultimateDashTimer > 8) {
+                  attacker.y = (attacker.groundY - attacker.h) + Math.sin(orbitAngle) * 30;
+              }
           }
       }
+
 
       if (attacker.ultimateDashTimer <= 0) {
         attacker.isUltimateDash = false;
@@ -1041,7 +1101,7 @@ class GameEngine {
       return;
     }
 
-    if (this.state !== 'playing') return;
+    if (this.state !== 'playing' && this.state !== 'countdown') return;
 
     // ── ROUND TIMER & TRAINING MODE ─────────────────────────────
     if (this.mode === 'training') {
@@ -1053,7 +1113,7 @@ class GameEngine {
       // Revive if knocked out
       if (this.p1.isDead) { this.p1.isDead = false; this.p1.hp = this.p1.maxHp; }
       if (this.p2.isDead) { this.p2.isDead = false; this.p2.hp = this.p2.maxHp; }
-    } else {
+    } else if (this.state === 'playing') {
       this.roundTimer--;
       if (this.roundTimer <= 0) {
         this._endRound();
@@ -1145,13 +1205,19 @@ class GameEngine {
         } else if (status === 'countered') {
           CharEffects.hitEffect(tip.x, tip.y, this.p2, 'block');
           if (this.p2.charData.id === 'zenitsu') {
-             // Zenitsu counter dash behind logic
+             // Zenitsu: counter dash behind + 65dmg + stun 0.6s
              this.p2.x = this.p1.x + (this.p1.facingRight ? -40 : 40);
              this.p2.facingRight = !this.p2.facingRight;
-             this.p1.takeDamage(65, 0); // Deal 65 direct damage
+             this.p1.takeDamage(65, 0);
              this.p1.knockdown(36); // 0.6s stun
+          } else if (this.p2.charData.id === 'inosuke') {
+             // Inosuke Wild Counter: 100dmg + Bleed 8/s×2s + instant reposition into attacker
+             this.p1.takeDamage(100, -dir * 15);
+             if (Array.isArray(this.p1.bleedEffects)) this.p1.bleedEffects.push({ dps: 8, duration: 2, elapsed: 0 });
+             // Áp sát địch ngay lập tức — không stun
+             this.p2.x = this.p1.x + (this.p1.facingRight ? 30 : -30);
           } else {
-             // Counter attack damage back to attacker!
+             // Default counter (Tanjiro etc): 90dmg + stun 0.4s
              this.p1.takeDamage(90, -dir * 15);
              this.p1.knockdown(24); // 0.4s stun
           }
@@ -1179,9 +1245,14 @@ class GameEngine {
              this.p1.facingRight = !this.p1.facingRight;
              this.p2.takeDamage(65, 0);
              this.p2.knockdown(36);
+          } else if (this.p1.charData.id === 'inosuke') {
+             // Inosuke Wild Counter: 100dmg + Bleed + áp sát
+             this.p2.takeDamage(100, -dir * 15);
+             if (Array.isArray(this.p2.bleedEffects)) this.p2.bleedEffects.push({ dps: 8, duration: 2, elapsed: 0 });
+             this.p1.x = this.p2.x + (this.p2.facingRight ? 30 : -30);
           } else {
              this.p2.takeDamage(90, -dir * 15);
-             this.p2.knockdown(24); // 0.4s stun
+             this.p2.knockdown(24);
           }
         }
       }
@@ -1207,6 +1278,10 @@ class GameEngine {
              this.p2.facingRight = !this.p2.facingRight;
              this.p1.takeDamage(65, 0);
              this.p1.knockdown(36);
+          } else if (this.p2.charData.id === 'inosuke') {
+             this.p1.takeDamage(100, -dir * 15);
+             if (Array.isArray(this.p1.bleedEffects)) this.p1.bleedEffects.push({ dps: 8, duration: 2, elapsed: 0 });
+             this.p2.x = this.p1.x + (this.p1.facingRight ? 30 : -30);
           } else {
              this.p1.takeDamage(90, -dir * 15);
              this.p1.knockdown(24);
@@ -1234,6 +1309,10 @@ class GameEngine {
              this.p1.facingRight = !this.p1.facingRight;
              this.p2.takeDamage(65, 0);
              this.p2.knockdown(36);
+          } else if (this.p1.charData.id === 'inosuke') {
+             this.p2.takeDamage(100, -dir * 15);
+             if (Array.isArray(this.p2.bleedEffects)) this.p2.bleedEffects.push({ dps: 8, duration: 2, elapsed: 0 });
+             this.p1.x = this.p2.x + (this.p2.facingRight ? 30 : -30);
           } else {
              this.p2.takeDamage(90, -dir * 15);
              this.p2.knockdown(24);
@@ -1247,36 +1326,37 @@ class GameEngine {
     // P1 projectiles hit P2
     for (let i = this.p1.projectiles.length - 1; i >= 0; i--) {
       const p = this.p1.projectiles[i];
+      if (p.alreadyHit) { this.p1.projectiles.splice(i, 1); continue; } // Đã hit rồi — xóa ngay
       const pBox = { x: p.x - p.w / 2, y: p.y - p.h / 2, w: p.w, h: p.h };
       if (this._rectOverlap(pBox, this.p2.bodyHitbox)) {
+        p.alreadyHit = true; // Đánh dấu trước — không bao giờ hit 2 lần
         const status = this.p2.takeDamage(p.damage, p.vx > 0 ? 25 : -25);
         if (status === 'hit') {
           CharEffects.hitEffect(p.x, p.y, this.p1, 'proj');
           Effects.screenShake(8);
           AudioManager.heavyHit();
-          this.p1.projectiles.splice(i, 1);
         } else if (status === 'blocked' || status === 'countered') {
-          // You block a projectile. Countering a projectile just blocks it perfectly (maybe reflect? let's just destroy it).
           CharEffects.hitEffect(p.x, p.y, this.p2, 'block');
-          this.p1.projectiles.splice(i, 1);
         }
+        this.p1.projectiles.splice(i, 1); // Xóa trong mọi trường hợp khi chạm
       }
     }
     // P2 projectiles hit P1
     for (let i = this.p2.projectiles.length - 1; i >= 0; i--) {
       const p = this.p2.projectiles[i];
+      if (p.alreadyHit) { this.p2.projectiles.splice(i, 1); continue; } // Đã hit rồi — xóa ngay
       const pBox = { x: p.x - p.w / 2, y: p.y - p.h / 2, w: p.w, h: p.h };
       if (this._rectOverlap(pBox, this.p1.bodyHitbox)) {
+        p.alreadyHit = true; // Đánh dấu trước
         const status = this.p1.takeDamage(p.damage, p.vx > 0 ? 25 : -25);
         if (status === 'hit') {
           CharEffects.hitEffect(p.x, p.y, this.p2, 'proj');
           Effects.screenShake(8);
           AudioManager.heavyHit();
-          this.p2.projectiles.splice(i, 1);
         } else if (status === 'blocked' || status === 'countered') {
           CharEffects.hitEffect(p.x, p.y, this.p1, 'block');
-          this.p2.projectiles.splice(i, 1);
         }
+        this.p2.projectiles.splice(i, 1); // Xóa trong mọi trường hợp khi chạm
       }
     }
   }
@@ -1294,13 +1374,23 @@ class GameEngine {
     const side = attacker.x < this.W / 2 ? 'left' : 'right';
 
     // Pass target to CinematicOverlay with specific type
-    let ultType = 'ult1';
-    if (attacker.charData && attacker.charData.id === 'zenitsu') {
-        if (attacker.currentAttackVariant === 'ULT1') ultType = 'ult0';
-        else if (attacker.currentAttackVariant === 'ULT2') ultType = 'ult1';
-        else if (attacker.currentAttackVariant === 'ULT_O') ultType = 'ult2';
+    let ultType = 'ult0';
+    const charId = attacker.charData ? attacker.charData.id : '';
+    const variant = attacker.currentAttackVariant;
+
+    if (charId === 'zenitsu') {
+        if (variant === 'ULT1') ultType = 'ult0';
+        else if (variant === 'ULT2') ultType = 'ult1';
+        else if (variant === 'ULT_O') ultType = 'ult2';
+    } else if (charId === 'inosuke') {
+        if (variant === 'ULT0') ultType = 'ult0';
+        else if (variant === 'ULT1') ultType = 'ult1';
+        else if (variant === 'ULT_O') ultType = 'ult2';
     } else {
-        ultType = attacker.currentAttackVariant === 'ULT2' ? 'ult2' : 'ult1';
+        // Tanjiro và các nhân vật khác
+        if (variant === 'ULT2' || variant === 'ULT_O') ultType = 'ult2';
+        else if (variant === 'ULT1') ultType = 'ult1';
+        else ultType = 'ult0';
     }
     CinematicOverlay.start(attacker, target, () => {
       this.state = 'ultimate_dash';

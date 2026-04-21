@@ -34,6 +34,28 @@ Tài liệu này tổng hợp toàn bộ quy trình chuẩn chỉ nhất và ghi
 
 ---
 
+### 6. Ngu Ngốc 6: Text Art bị vỡ ô vuông (Lỗi Glyph rác)
+- **Hành vi sai trái:** Cố chấp sử dụng Font chữ mặc định của hệ thống hoặc các Font Tây phương không hỗ trợ bộ mã Unicode Tiếng Việt (Ví dụ: `Impact.ttf` hay `Anton` bị thiếu Glyph).
+- **Hậu quả:** Toàn bộ chữ có dấu (như ơ, ư, ầ, ệ) biến thành các ô vuông [□] rác rưởi. Text cực kỳ lởm khởm.
+- **Cách khắc phục vĩnh viễn:** Chắc chắn sử dụng Font chữ **có hỗ trợ đầy đủ Tiếng Việt** (như `Arial Unicode.ttf` hoặc bộ Font đã việt hóa) khi gọi Script Python Generator.
+
+### 7. Ngu Ngốc 7: Cinematic bị cắt xén, tràn viền khung hình (Bleed)
+- **Hành vi sai trái:** Dùng Prompt AI mặc định mà không thiết lập tỷ lệ và ranh giới (Margin) cho khuôn hình, dẫn tới đối tượng, vệt kiếm hay Aura bị chém cụt ngủn ở rìa ảnh.
+- **Hậu quả:** Đưa vào Game nguyên cái Cinematic bị đường cắt thẳng tắp như dùng dao lam xén giấy, cực kỳ thô thiển và đóng khung giả trân.
+- **Cách khắc phục vĩnh viễn:** Quy tắc BẮT BUỘC trong Prompt: `SQUARE COMPOSITION, all elements FULLY CONTAINED within frame, wide margins on all sides, nothing touches or bleeds past any edge.` Khung viền 1:1, chừa rìa thật rộng.
+
+### 8. Ngu Ngốc 8: Khung viền cứng ngắc sau khi Chroma Key
+- **Hành vi sai trái:** Chỉ bóc tách ChromaKey Magenta một cách hời hợt, để lại cái mép cứng đờ khét lẹt quanh hình vuông.
+- **Hậu quả:** Cắt đứt sự tự nhiên của nghệ thuật Cinematic. Lộ bài cắt dán.
+- **Cách khắc phục vĩnh viễn:** Sau khi bóc Gradient/Magenta, BẮT BUỘC chèn thuật toán làm mờ viền (Vignette fade smoothstep góc) trong Script Python. Bo các góc mờ dần vào trong suốt tự nhiên, thả chìm vào bóng tối (`fade = fade * fade * (3 - 2 * fade)`). 
+
+### 9. Ngu Ngốc 9: Artstyle Ảo lòi, Không đúng phong cách Gốc
+- **Hành vi sai trái:** Nhắm mắt gen Cinematic bằng các keyword generic chung chung (kiểu "anime style", "epic 2d fighter").
+- **Hậu quả:** Nhân vật trông bị rác, mạo danh tráo hàng, lai tạp phong cách "dark fantasy 3D" Tàu khựa rẻ tiền, mất chất Canon.
+- **Cách khắc phục vĩnh viễn:** Nhắm thẳng Studio sản xuất Anime để làm Prompt: `EXACT ufotable studio animation style, Demon Slayer clean sharp anime cel-shading`. Nhuộm cứng nét vẽ dày, miêu tả hình tượng tỉ mẩn (Mặt Inosuke phải "surprisingly beautiful/feminine" như luật Canon).
+
+---
+
 ## PHẦN 2: WORKFLOW CHUẨN XÂY DỰNG CINEMATIC & EPIC TEXT MỚI
 
 Khi làm mới (Quy trình 5 Bước Thần Thánh Cấm Trượt):

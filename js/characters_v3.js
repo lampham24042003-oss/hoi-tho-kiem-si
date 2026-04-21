@@ -317,48 +317,270 @@ const CHARACTERS = {
     id: 'inosuke',
     name: 'Inosuke',
     displayName: 'Hashibira Inosuke',
-    ultimateName: 'Thú Hơi Thở - Nhận Thức Không Gian',
+    ultimateName: 'Dã Thú Hơi Thở - Đầu Liệt',
     sprites: {
-      idle:   'assets/sprites/inosuke_idle.png',
-      idle_attack: 'assets/sprites/inosuke_idle_attack.png',
-      jump:   'assets/sprites/inosuke_jump.png',
-      jump_attack: 'assets/sprites/inosuke_jump_attack.png',
-      crouch: 'assets/sprites/inosuke_crouch.png',
+      // ── MOVEMENT (20 new sprites, magenta chromakey processed) ──
+      idle:          'assets/sprites/inosuke_idle.png',
+      idle_attack:   'assets/sprites/inosuke_idle_attack.png',
+      jump:          'assets/sprites/inosuke_jump.png',
+      jump_attack:   'assets/sprites/inosuke_jump_attack.png',
+      crouch:        'assets/sprites/inosuke_crouch.png',
       crouch_attack: 'assets/sprites/inosuke_crouch_attack.png',
-      run1: 'assets/sprites/inosuke_run1.png',
-      run2: 'assets/sprites/inosuke_run2.png',
-      ultimate_pose: 'assets/sprites/inosuke_ultimate.png',
-      kick: 'assets/sprites/inosuke_kick.png',
-      jump_kick: 'assets/sprites/inosuke_jump_kick.png',
-      crouch_kick: 'assets/sprites/inosuke_crouch_kick.png',
-      ultimate_dash: 'assets/sprites/inosuke_ultimate_dash.png',
+      // Run sprites (2-frame cycle)
+      run1:          'assets/sprites/inosuke_run1.png',
+      run2:          'assets/sprites/inosuke_run2.png',
+      // Crouch walk sprites
+      crouch_walk1:  'assets/sprites/inosuke_crouch_walk1.png',
+      crouch_walk2:  'assets/sprites/inosuke_crouch_walk2.png',
+
+      // ── ATTACKS ──
+      // J2 heavy: heavy attack variants
+      heavy_attack:        'assets/sprites/inosuke_heavy_attack.png',
+      heavy_jump_attack:   'assets/sprites/inosuke_jump_heavy_attack.png',
+      heavy_crouch_attack: 'assets/sprites/inosuke_crouch_heavy_attack.png',
+
+      // K — Headbutt (standing) = inosuke_kick.png (idle_headbutt source)
+      kick:          'assets/sprites/inosuke_kick.png',
+      // K — Jump headbutt in air
+      jump_kick:     'assets/sprites/inosuke_jump_kick.png',
+      // S+K — Roll kick crouching
+      crouch_kick:   'assets/sprites/inosuke_crouch_kick.png',
+      // Headbutt & roll_kick aliases (same as above)
+      headbutt:      'assets/sprites/inosuke_kick.png',
+      roll_kick:     'assets/sprites/inosuke_crouch_kick.png',
+
+      // ── L PROJECTILE (boomerang sword throw) ──
+      projectile:        'assets/sprites/inosuke_projectile.png',
+      jump_projectile:   'assets/sprites/inosuke_jump_projectile.png',
+      crouch_projectile: 'assets/sprites/inosuke_crouch_projectile.png',
+
+      // ── BLOCK (no separate block sprite → reuse idle, engine draws shield VFX) ──
+      block: 'assets/sprites/inosuke_idle.png',
+
+      // ── ULTIMATES ──
+      // U — Ulti-0: Bộc Liệt Mãnh Tiến (gap-closer dash)
+      ulti0_charge: 'assets/sprites/inosuke_ulti0_charge.png',
+      ulti0_attack: 'assets/sprites/inosuke_ulti0_attack.png',
+      // Legacy keys used by base-class rendering
+      ultimate_pose: 'assets/sprites/inosuke_ulti0_charge.png',
+      ultimate_dash: 'assets/sprites/inosuke_ulti0_attack.png',
+
+      // I — Ulti-1: Viên Chuyển Toàn Nha (vortex spinning)
+      ulti1_charge: 'assets/sprites/inosuke_ulti1_charge.png',
+      ulti1_attack: 'assets/sprites/inosuke_ulti1_attack.png',
+
+      // O — Ulti-2: Đầu Liệt — 4 phases (INOSUKE STAYS IN PLACE, swords fly)
+      ulti2_charge: 'assets/sprites/inosuke_ulti2_charge.png',   // Phase 1: roar, charge
+      ulti2_throw:  'assets/sprites/inosuke_ulti2_throw.png',    // Phase 2: throw both swords (arms forward)
+      ulti2_return: 'assets/sprites/inosuke_ulti2_throw.png',    // Phase 3: reuse throw pose (swords returning, hands open)
+      ulti2_catch:  'assets/sprites/inosuke_ulti2_catch.png',    // Phase 4: catch swords back
+
+      // Exhaust after Ulti-2
+      exhaust_pose: 'assets/sprites/inosuke_exhaust_pose.png',
+    },
+    vfx: {
+      // ── VFX (21 assets — black bg, screen blend) ──
+      // A. Basic attacks
+      beast_slash1:       'assets/effects/inosuke_vfx/vfx_inosuke_beast_slash1.png',
+      beast_slash2:       'assets/effects/inosuke_vfx/vfx_inosuke_beast_slash2.png',
+      beast_kick:         'assets/effects/inosuke_vfx/vfx_inosuke_beast_kick.png',
+      beast_proj:         'assets/effects/inosuke_vfx/vfx_inosuke_beast_proj.png',
+      beast_dodge:        'assets/effects/inosuke_vfx/vfx_inosuke_beast_dodge.png',
+      // B. Impacts (used at hit point on target)
+      beast_slash_impact: 'assets/effects/inosuke_vfx/impact_inosuke_beast_slash.png',
+      beast_kick_impact:  'assets/effects/inosuke_vfx/impact_inosuke_beast_kick.png',
+      beast_proj_impact:  'assets/effects/inosuke_vfx/impact_inosuke_beast_proj.png',
+      block:              'assets/effects/inosuke_vfx/vfx_inosuke_block.png',
+      bleed_aura:         'assets/effects/inosuke_vfx/vfx_inosuke_bleed_aura.png',
+      // C. Transform & Aura (per ultimate)
+      ulti0_transform:    'assets/effects/inosuke_vfx/vfx_inosuke_ulti0_transform.png',
+      ulti0_aura:         'assets/effects/inosuke_vfx/vfx_inosuke_ulti0_aura.png',
+      ulti1_transform:    'assets/effects/inosuke_vfx/vfx_inosuke_ulti1_transform.png',
+      ulti1_aura:         'assets/effects/inosuke_vfx/vfx_inosuke_ulti1_aura.png',
+      ulti2_transform:    'assets/effects/inosuke_vfx/vfx_inosuke_ulti2_transform.png',
+      ulti2_aura:         'assets/effects/inosuke_vfx/vfx_inosuke_ulti2_aura.png',
+      // D. Ultimate attacks
+      ult0_attack:        'assets/effects/inosuke_vfx/vfx_inosuke_ult0_attack.png',
+      ult1_vortex:        'assets/effects/inosuke_vfx/vfx_inosuke_ult1_vortex.png',
+      ult2_throw:         'assets/effects/inosuke_vfx/vfx_inosuke_ult2_throw.png',
+      ult2_return:        'assets/effects/inosuke_vfx/vfx_inosuke_ult2_return.png',
+      ult2_catch:         'assets/effects/inosuke_vfx/vfx_inosuke_ulti2_catch.png',
+      // F. Exhaust & generic transform
+      exhaust_aura:       'assets/effects/inosuke_vfx/vfx_inosuke_exhaust_aura.png',
+      beast_transform:    'assets/effects/inosuke_vfx/vfx_inosuke_beast_transform.png',
     },
     impacts: {
-      sword: 'assets/effects/hit_inosuke_sword_v3.png',
-      kick: 'assets/effects/hit_inosuke_kick_v3.png',
-      proj: 'assets/effects/hit_inosuke_proj_v3.png',
-      block: 'assets/effects/hit_inosuke_block_v3.png',
+      sword:  'assets/effects/hit_inosuke_sword_v3.png',
+      kick:   'assets/effects/hit_inosuke_kick_v3.png',
+      proj:   'assets/effects/hit_inosuke_proj_v3.png',
+      block:  'assets/effects/hit_inosuke_block_v3.png',
+      ult0:   'assets/effects/inosuke_vfx/hit_inosuke_ult0.png',
+      ult1:   'assets/effects/inosuke_vfx/hit_inosuke_ult1.png',
+      ult2:   'assets/effects/inosuke_vfx/hit_inosuke_ult2.png',
     },
-    spriteUrl: 'assets/sprites/inosuke_idle.png',
-    ultimateUrl: 'assets/ultimates/inosuke.png',
-    swordLength: 130,
-    swordColor: '#228833',
-    swordGlow: '#44ff66',
-    auraColor: 'rgba(50, 220, 80, 0.4)',
-    projectileColor: '#33dd55',
-    projectileGlow: '#66ff88',
-    speed: 5.5,
-    jumpForce: -16,
-    maxHp: 1000,
-    attackDamage: 7,
-    kickDamage: 5,
-    projectileDamage: 10,
-    ultimateDamage: 42,
-    selectColor: '#44ff66',
-    description: '',
+    cinematics: {
+      ult0:      'assets/effects/inosuke_vfx/cinematic_inosuke_ult0.png',
+      ult0_text: 'assets/effects/inosuke_vfx/ult_text_inosuke_ult0.png',
+      ult1:      'assets/effects/inosuke_vfx/cinematic_inosuke_ult1.png',
+      ult1_text: 'assets/effects/inosuke_vfx/ult_text_inosuke_ult1.png',
+      ult2:      'assets/effects/inosuke_vfx/cinematic_inosuke_ult2.png',
+      ult2_text: 'assets/effects/inosuke_vfx/ult_text_inosuke_ult2.png',
+    },
+    spriteUrl:    'assets/sprites/inosuke_idle.png',
+    ultimateUrl:  'assets/ultimates/inosuke.png',
+    // ── COMBAT STATS (Aligned with inosuke_stats.md) ──
+    swordLength:       135,      // Longer reach thanks to dual blades
+    swordColor:        '#228833',
+    swordGlow:         '#44ff66',
+    auraColor:         'rgba(50, 220, 80, 0.4)',
+    projectileColor:   '#33dd55',
+    projectileGlow:    '#66ff88',
+    speed:             4.8,      // units/s — between Tanjiro(4.2) and Zenitsu(5.2)
+    jumpForce:         -18,      // Higher jump: 3.4 units (highest in roster)
+    maxHp:             4500,     // Between Tanjiro(5000) and Zenitsu(4200)
+    attackDamage:      50,       // J1 base: 25+25 dual damage
+    kickDamage:        52,       // K headbutt
+    projectileDamage:  60,       // L boomerang sword
+    ultimateDamage:    195,      // ULT0 base: 3×65
+    selectColor:       '#44ff66',
+    description:       '',
+    tags: ['Dã Thú Hung Hãn', 'Áp Sát Liên Tục', 'Bùng Phát Sát Thương', 'High Risk – High Reward'],
+    stats: {
+      attack:     4,
+      defense:    2,
+      speed:      4,
+      agility:    5,
+      difficulty: 4
+    },
+    mechanicsDescription: `
+      <div style="color:#ddd; font-family:sans-serif; font-size:13px; line-height:1.6; text-align:left;">
+        <div style="color:#44ff66; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(68,255,102,0.4); padding-bottom:4px; margin-bottom:4px;">🐗 HỆ THỐNG CHIẾN ĐẤU CƠ BẢN (DÃ THÚ HƠI THỞ)</div>
+        Dã thú hung hãn với <b>song đao</b> — mỗi đòn chém J đều đánh <b>2 lần liên tiếp</b> (dao phải + dao trái). Hitbox rộng nhất roster (160°). Không có Cường Hóa — thay vào đó U là Ulti-0 chi phí thấp (50 nộ). Cơ chế nộ đặc biệt: <b>hồi 10 nộ/s khi đang di chuyển</b>, ngừng hồi khi đứng yên — hoàn toàn ngược Zenitsu!<br>
+        <div style="color:#88ff99; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(136,255,153,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">⚔️ ĐÒN ĐÁNH & CHIÊU THỨC</div>
+        <b>[P] Song Đao Bổ Chéo:</b> Nhấp nhả (P1, 50 dmg) ra 2 nhát liên tiếp, hitbox 140°. Giữ 0.3s (P2, 85 dmg) chém hoành tráng 160° + gây <span style="color:#ff4444;">Chảy Máu 8/s×3s</span>.<br>
+        <b>[K] Húc Đầu:</b> Húc đầu heo vào địch (52 dmg), chỉ gây Stagger 0.3s — không knockback, giữ địch trong tầm. <b>Cúi+K</b> Đạp Lăn 360° (38 dmg) đẩy địch ra ~1.5 units — rất hữu dụng khi bị vây.<br>
+        <b>[L] Phóng Kiếm Vòng Cung:</b> Ném 1 dao bay vòng cung (60 dmg, hitbox rộng 1.2 units — rộng nhất dàn), dao tự quay về sau khi chạm. Bay chậm (9 u/s) nhưng dễ trúng địch di chuyển ngang.<br>
+        <div style="color:#ffcc00; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,204,0,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">🛡 PHÒNG THỦ & PHẢN XẠ HOANG DÃ</div>
+        <b>[B] Block:</b> Hấp thụ 65% sát thương (yếu nhất roster — Inosuke thiên về né tránh).<br>
+        <span style="color:#ffcc00;">⚠️ <b>Wild Counter:</b></span> Window 0.18s — phản 100 DMG kèm <span style="color:#ff4444;">Bleed 8/s×2s</span>. Không stun nhưng <b>áp sát địch ngay lập tức</b>.<br>
+        <div style="color:#ff4444; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,68,68,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">💥 TUYỆT KỸ DÃ THÚ (3 CẤP ULTI)</div>
+        <b>[U] Bộc Liệt Mãnh Tiến (50 nộ):</b> Gap closer — lao xuyên địch, 3 nhát trong lúc bay qua (195 dmg). Chi phí thấp, dùng thường xuyên.<br>
+        <b>[I] Viên Chuyển Toàn Nha (75 nộ):</b> Lốc xoáy điên cuồng 10 nhát quanh địch (~512 dmg tổng kèm Bleed 4s).<br>
+        <b>[O] Đầu Liệt (100 nộ - Tất Sát Kỹ):</b> Ném cả 2 kiếm xuyên địch rồi <b>tự quay về</b> xé thêm lần nữa (~650 dmg tổng). <br>
+        <span style="color:#ff2222;">🆘 KHOẢNG TRỐNG TAY KHÔNG:</span> Trong ~1.2s kiếm đang bay, J1/J2 bị <b>vô hiệu hoá</b>. Sau khi bắt kiếm: mất 1.8s bất động!
+      </div>
+    `,
     swordPivotX: 22,
     swordPivotY: -12,
     vfxKick: 'assets/effects/vfx_kick_inosuke_v3.png',
+  },
+  nezuko: {
+    id: 'nezuko',
+    name: 'Nezuko',
+    displayName: 'Kamado Nezuko',
+    ultimateName: 'Huyết Quỷ Thuật - Bộc Huyết Viêm Đao',
+    sprites: {
+      idle:          'assets/sprites/nezuko_idle.png',
+      idle_attack:   'assets/sprites/nezuko_idle_attack.png',
+      jump:          'assets/sprites/nezuko_jump.png',
+      jump_attack:   'assets/sprites/nezuko_jump_attack.png',
+      crouch:        'assets/sprites/nezuko_crouch.png',
+      crouch_attack: 'assets/sprites/nezuko_crouch_attack.png',
+      run1:          'assets/sprites/nezuko_run1.png',
+      run2:          'assets/sprites/nezuko_run2.png',
+      crouch_walk1:  'assets/sprites/nezuko_crouch_walk1.png',
+      crouch_walk2:  'assets/sprites/nezuko_crouch_walk2.png',
+      heavy_attack:        'assets/sprites/nezuko_heavy_attack.png',
+      heavy_jump_attack:   'assets/sprites/nezuko_jump_heavy_attack.png',
+      heavy_crouch_attack: 'assets/sprites/nezuko_crouch_heavy_attack.png',
+      kick:                'assets/sprites/nezuko_stomp.png',
+      jump_kick:           'assets/sprites/nezuko_jump_stomp.png',
+      crouch_kick:         'assets/sprites/nezuko_crouch_stomp.png',
+      projectile:          'assets/sprites/nezuko_projectile.png',
+      jump_projectile:     'assets/sprites/nezuko_jump_projectile.png',
+      crouch_projectile:   'assets/sprites/nezuko_crouch_projectile.png',
+      block:               'assets/sprites/nezuko_block.png',
+
+      powerup_pose:        'assets/sprites/nezuko_ulti1_charge.png',
+
+      ulti0_charge:        'assets/sprites/nezuko_ulti0_charge.png',
+      ulti0_attack:        'assets/sprites/nezuko_ulti0_attack.png',
+      ulti1_charge:        'assets/sprites/nezuko_ulti1_charge.png',
+      ulti1_attack:        'assets/sprites/nezuko_ulti1_attack.png',
+      ulti2_charge:        'assets/sprites/nezuko_ulti2_charge.png',
+      ulti2_summon:        'assets/sprites/nezuko_ulti2_summon.png',
+      ulti2_slash:         'assets/sprites/tanjiro_ulti2_slash.png',
+      exhaust_pose:        'assets/sprites/nezuko_exhaust_pose.png',
+    },
+    vfx: {
+      ult0_attack:        'assets/effects/nezuko_vfx/vfx_nezuko_ult0_attack.png',
+      ult1:               'assets/effects/nezuko_vfx/vfx_nezuko_ult1.png',
+      ult2_summon:        'assets/effects/nezuko_vfx/vfx_nezuko_ult2_summon.png',
+      ult2_slash:         'assets/effects/nezuko_vfx/vfx_nezuko_ult2_slash.png',
+      exhaust_aura:       'assets/effects/nezuko_vfx/vfx_nezuko_exhaust_aura.png',
+    },
+    impacts: {
+      kick:   'assets/effects/hit_nezuko_kick_v3.png',
+      proj:   'assets/effects/hit_nezuko_proj_v3.png',
+      block:  'assets/effects/hit_nezuko_block_v3.png',
+      ult0:   'assets/effects/nezuko_vfx/hit_nezuko_ult0.png',
+      ult1:   'assets/effects/nezuko_vfx/hit_nezuko_ult1.png',
+      ult2:   'assets/effects/nezuko_vfx/hit_nezuko_ult2.png',
+    },
+    cinematics: {
+      ult0:      'assets/effects/nezuko_vfx/cinematic_nezuko_ult0.png',
+      ult0_text: 'assets/effects/nezuko_vfx/ult_text_nezuko_ult0.png',
+      ult1:      'assets/effects/nezuko_vfx/cinematic_nezuko_ult1.png',
+      ult1_text: 'assets/effects/nezuko_vfx/ult_text_nezuko_ult1.png',
+      ult2:      'assets/effects/nezuko_vfx/cinematic_nezuko_ult2.png',
+      ult2_text: 'assets/effects/nezuko_vfx/ult_text_nezuko_ult2.png',
+    },
+    spriteUrl:    'assets/sprites/nezuko_idle.png',
+    ultimateUrl:  'assets/ultimates/nezuko.png',
+    swordLength:       100,
+    swordColor:        '#ff4477',
+    swordGlow:         '#ff88aa',
+    auraColor:         'rgba(255, 68, 119, 0.4)',
+    projectileColor:   '#ff2255',
+    projectileGlow:    '#ff6699',
+    speed:             4.6,
+    jumpForce:         -17.5,
+    maxHp:             4300,
+    attackDamage:      42,
+    kickDamage:        58,
+    projectileDamage:  55,
+    ultimateDamage:    180,
+    selectColor:       '#ff4477',
+    description:       '',
+    tags: ['Huyết Diệm Bạo Liệt', 'Cước Thuật Tốc Kích', 'Suy Hao Liên Tục', 'High Risk – High Reward'],
+    stats: {
+      attack:     3,
+      defense:    3,
+      speed:      4,
+      agility:    5,
+      difficulty: 4
+    },
+    mechanicsDescription: `
+      <div style="color:#ddd; font-family:sans-serif; font-size:13px; line-height:1.6; text-align:left;">
+        <div style="color:#ff4477; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,68,119,0.4); padding-bottom:4px; margin-bottom:4px;">🌸 HỆ THỐNG CHIẾN ĐẤU CƠ BẢN (KHÔNG VŨ KHÍ)</div>
+        Sử dụng đòn cước tốc độ cao không cần kiếm, kết hợp cơ chế <b>hồi 12 Nộ/s khi BỊ ĐÁNH TRÚNG</b> — mạnh nhất khi bị dồn vào góc tường. Các đòn đánh châm Huyết Diệm, gây sát thương duy trì cực kỳ thê thảm.<br>
+        <div style="color:#ff88aa; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,136,170,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">🦶 ĐÒN ĐÁNH & CHIÊU THỨC</div>
+        <b>[P] Cước Thuật Huyết Diệm:</b> Nhấp nhả (42 dmg), tốc độ siêu nhanh. Giữ 0.3s (72 dmg, hitbox 150°) tạo lửa hồng châm bùng <span style="color:#ff4444;">Burn 10/s×3s</span>.<br>
+        <b>[K] Đạp Xuyên:</b> Đạp mạnh (58 dmg), Stagger 0.35s + Burn 2s. Không đẩy lùi, giữ góc cận chiến. <b>Nhảy+K</b> Đạp từ trên xuống gây Slam Knockdown đối thủ.<br>
+        <b>[L] Phun Huyết Diệm:</b> Ném cầu lửa hồng (55 dmg). Trúng địch sẽ kéo dài hiệu ứng Burn hiện tại thêm 2s, ép địch chịu thiệt hại lâu dài.<br>
+        <div style="color:#ff6688; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,102,136,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">🛡 PHÒNG THỦ & TÁI SINH</div>
+        <b>[B] Block:</b> Hấp thụ 70% sát thương. ĐẶC BIỆT: hồi lại <b>8 Máu mỗi nhát đỡ</b>.<br>
+        <span style="color:#ffaa00;">⚠️ <b>Blood Counter:</b></span> Phản đòn 85 DMG + bùng <span style="color:#ff4444;">Burn 10/s×3s</span> tức thì. Trả thù bằng lửa!<br>
+        <div style="color:#ff2244; font-weight:bold; font-size:14px; border-bottom:1px solid rgba(255,34,68,0.4); padding-bottom:4px; margin-bottom:4px; margin-top:8px;">💥 HUYẾT QUỶ THUẬT (3 CẤP ULTI)</div>
+        <b>[U] Cước Thuật Tăng Cường (50 nộ):</b> Lao cực mạnh toàn màn hình (180 dmg) gây Stun + Burn. Rẻ, gap close liên tục.<br>
+        <b>[I] Bộc Huyết (75 nộ):</b> Lửa hồng bùng trụ nổ (~410 dmg tổng). Nezuko được giảm nửa sát thương khi đang cast và nhận lượng Energy gấp đôi khi bị tấn công!<br>
+        <b>[O] Bộc Huyết Viêm Đao (100 nộ - Tất Sát Kỹ):</b> Dùng máu triệu hồi bóng hình Tanjiro chém liên hoàn 5 nhát (~650 dmg tổng). Nếu địch chết trong vòng 3s, hồi +20 Nộ.<br>
+        <span style="color:#ff2222;">🆘 SUY KIỆT NẶNG:</span> Bóng mờ lao đi 1.4s Nezuko không có tay đánh đòn, 2s sau chiêu kiệt sức!
+      </div>
+    `,
+    swordPivotX: 0,
+    swordPivotY: 10,
+    vfxKick: 'assets/effects/vfx_kick_nezuko_v3.png',
   },
   murata: {
     id: 'murata',

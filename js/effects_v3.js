@@ -39,8 +39,7 @@ const Effects = (() => {
         type: 'spark'
       });
     }
-    // Slash line
-    createParticle(x, y, glow, { type: 'ring', size: 30, decay: 0.08, speed: 0, gravity: 0 });
+    // Không thêm ring particle ở đây — ring stacks khi projectile hit nhiều lần → tạo đống vòng tròn
   }
 
   function ultimateParticles(x, y, color, glow, count = 30) {
@@ -171,10 +170,6 @@ const Effects = (() => {
       ctx.globalAlpha = Math.max(0, p.alpha);
 
       if (p.type === 'ring') {
-        // Đây là THE FIX quan trọng nhất:
-        // Reset TOÀN BỘ shadow về 0 TRƯỚC KHI vẽ arc.
-        // Shadow từ spark particle trước đó bị leak vào ctx, khiến Safari
-        // fill màu đen vào bên trong hình tròn arc này → đây là vòng tròn đen!
         ctx.shadowColor = 'rgba(0,0,0,0)';
         ctx.shadowBlur = 0;
         ctx.shadowOffsetX = 0;
@@ -186,21 +181,19 @@ const Effects = (() => {
         ctx.stroke();
       } else if (p.type === 'energy') {
         ctx.fillStyle = p.glow;
-        // Tạm thời tắt shadow để tránh lỗi Safari
         ctx.shadowColor = 'transparent';
         ctx.shadowBlur = 0;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 1.99);
         ctx.fill();
       } else {
-        // Spark
-        ctx.shadowColor = p.glow;
-        ctx.shadowBlur = 8;
+        // Spark — KHÔNG dùng shadowBlur (tốn GPU x âm thầm nhất)
+        // Dùng màu sáng tự nhiên của fillStyle để tạo ảo giác lấp lánh
+        ctx.shadowBlur = 0;
         ctx.fillStyle = p.color;
         const len = p.size * p.life;
         ctx.save();
         ctx.translate(p.x, p.y);
-        const vel = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
         ctx.rotate(Math.atan2(p.vy, p.vx));
         ctx.beginPath();
         ctx.ellipse(0, 0, len * 1.5, len * 0.4, 0, 0, Math.PI * 1.99);
@@ -212,22 +205,22 @@ const Effects = (() => {
 
     ctx.restore();
 
-    // Draw Sprite Impacts
+    // Draw Sprite Impacts — dùng 'screen' để unmult nền đen của black-bg VFX assets
     if (spriteImpacts.length > 0) {
       ctx.save();
       ctx.translate(shakeX, shakeY);
       
-      // Dùng source-over là an toàn nhất để tránh bị mờ/mất màu
       for (const imp of spriteImpacts) {
         if (!imp.img) continue;
         
-        ctx.globalCompositeOperation = 'source-over';
-        ctx.globalAlpha = Math.min(1.0, imp.life * 1.5);
+        // Dùng screen để unmult nền đen (black-bg PNG sẽ trở nên trong suốt tự nhiên)
+        ctx.globalCompositeOperation = 'screen';
+        ctx.globalAlpha = Math.min(1.0, imp.life * 1.2); // giảm từ 2.0 xuống 1.2
         
-        // Fast expansion scale (0.8 to 1.3)
-        const scale = (0.8 + (1 - imp.life) * 0.5) * (imp.scaleMult || 1.0);
+        // Fast expansion scale — nhỏ hơn cũ
+        const scale = (0.85 + (1 - imp.life) * 0.3) * (imp.scaleMult || 1.0);
         const imgRatio = imp.img.width / imp.img.height;
-        const h = 250 * scale; // Large impact
+        const h = 180 * scale; // giảm từ 280 xuống 180
         const w = h * imgRatio;
         
         ctx.save();
@@ -235,16 +228,10 @@ const Effects = (() => {
         ctx.rotate(imp.rotation);
         
         try {
-           if (!imp.img.width || !imp.img.height) {
-              ctx.globalAlpha = 1.0;
-              ctx.fillStyle = 'red';
-              ctx.font = '30px Arial';
-              ctx.fillText('IMG ERR', -50, -50);
-           } else {
+           if (imp.img.width && imp.img.height) {
               ctx.drawImage(imp.img, -w/2, -h/2, w, h);
            }
-        } catch(e) {
-        }
+        } catch(e) {}
         ctx.restore();
       }
       ctx.restore();
@@ -313,12 +300,6 @@ const Effects = (() => {
       ctx.restore();
     }
     
-    // VISUAL DEBUG - CAN REMOVE LATER
-    ctx.save();
-    ctx.fillStyle = 'yellow';
-    ctx.font = '20px Arial';
-    ctx.fillText('Impacts: ' + spriteImpacts.length, 10, 40);
-    ctx.restore();
   }
 
   function waterHit(x, y) {
@@ -334,10 +315,10 @@ const Effects = (() => {
   }
 
   function flameHit(x, y) {
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 6; i++) {  // Giảm từ 14 xuống 6 — tối ưu hiệu năng
       createParticle(x, y, i % 2 ? '#ff4488' : '#ff0033', {
         glow: '#ff88cc', speed: 5 + Math.random() * 6,
-        size: 2 + Math.random() * 4, decay: 0.022 + Math.random() * 0.03,
+        size: 2 + Math.random() * 4, decay: 0.06 + Math.random() * 0.04,  // decay nhanh hơn
         upBias: 5, type: 'spark'
       });
     }
@@ -564,6 +545,7 @@ const CharEffects = (() => {
 
   function _flameProjectile(ctx, p) {
     const hw = p.w / 2, t = Date.now() * 0.018;
+    ctx.save(); // Bọc toàn bộ để shadowBlur không rò ra gây vòng đen ở draw call kế tiếp
     ctx.shadowColor = '#ff2266'; ctx.shadowBlur = 28;
     for (let i = 0; i < 3; i++) {
       const flicker = Math.sin(t + i * 1.1) * 4;
@@ -587,6 +569,7 @@ const CharEffects = (() => {
       ctx.arc(td * (10 + i * 9), Math.sin(t + i * 0.8) * 7, 4 - i * 0.5, 0, Math.PI * 2);
       ctx.fill();
     }
+    ctx.restore(); // Dọn sạch shadow để không rò 
   }
 
   function _lightningProjectile(ctx, p) {
@@ -747,10 +730,10 @@ const CharEffects = (() => {
       const randomRotation = Math.random() * Math.PI * 2;
       
       let scaleMult = 1.0;
-      if (type === 'sword' || type === 'fire_sword') scaleMult = 0.35;
-      else if (type === 'kick' || type === 'fire_kick') scaleMult = 0.45;
-      else if (type === 'block' || type === 'fire_block') scaleMult = 0.6;
-      else if (type === 'proj' || type === 'fire_proj') scaleMult = 0.8;
+      if (type === 'sword' || type === 'fire_sword') scaleMult = 0.50;
+      else if (type === 'kick' || type === 'fire_kick') scaleMult = 0.60;
+      else if (type === 'block' || type === 'fire_block') scaleMult = 0.55;
+      else if (type === 'proj' || type === 'fire_proj') scaleMult = 0.75;
 
       Effects.spawnSpriteImpact(x, y, img, randomRotation, scaleMult);
     } else {
